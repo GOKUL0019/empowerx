@@ -5,7 +5,12 @@ module.exports = {
     "./src/**/*.{js,jsx,ts,tsx}",  // <-- Adjust these according to your project structure
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+    heading: ['"Bebas Neue"', 'cursive'],
+    body: ['Nunito', 'sans-serif'],
+  },
+    },
   },
   plugins: [],
 };

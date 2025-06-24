@@ -128,17 +128,7 @@ const Index = () => {
               Learn More
             </Link>
             
-            <div className="flex gap-4">
-              <Link to="/login?role=learner" className="glass-panel px-8 py-4 text-white font-semibold hover:bg-white/20 transition-all duration-300 rounded-xl">
-                Learner
-              </Link>
-              <Link to="/login?role=teacher" className="glass-panel px-8 py-4 text-white font-semibold hover:bg-white/20 transition-all duration-300 rounded-xl">
-                Teacher
-              </Link>
-              <Link to="/login?role=parent" className="glass-panel px-8 py-4 text-white font-semibold hover:bg-white/20 transition-all duration-300 rounded-xl">
-                Parent
-              </Link>
-            </div>
+            
           </div>
         </div>
       </section>

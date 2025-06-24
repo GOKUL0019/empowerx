@@ -1,23 +1,34 @@
-
-import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+// src/components/Navigation.tsx
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const navItems = [
     { name: "Home", path: "/" },
     { name: "About", path: "/about" },
     { name: "Team", path: "/team" },
     { name: "Contact", path: "/contact" },
-    { name: "Login", path: "/login" },
   ];
 
   return (
     <nav className="relative z-50 glass-panel bg-[rgba(146, 163, 203, 0.7)] backdrop-blur-md">
-
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-3">
@@ -42,6 +53,26 @@ const Navigation = () => {
                 {item.name}
               </Link>
             ))}
+            {!user ? (
+              <Link
+                to="/login"
+                className="text-white hover:text-yellow-400 transition-colors duration-300 font-medium"
+              >
+                Login
+              </Link>
+            ) : (
+              <div className="relative">
+                <div
+                  onClick={() => navigate('/profile')}
+                  className="cursor-pointer"
+                >
+                  <Avatar>
+                    <AvatarImage src={user.photoURL || undefined} />
+                    <AvatarFallback>{user.displayName?.[0] || "U"}</AvatarFallback>
+                  </Avatar>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -69,6 +100,25 @@ const Navigation = () => {
                   {item.name}
                 </Link>
               ))}
+              {!user ? (
+                <Link
+                  to="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="text-white hover:text-yellow-400 transition-colors duration-300 font-medium"
+                >
+                  Login
+                </Link>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Avatar
+                    onClick={() => navigate('/profile')}
+                    className="cursor-pointer"
+                  >
+                    <AvatarImage src={user.photoURL || undefined} />
+                    <AvatarFallback>{user.displayName?.[0] || "U"}</AvatarFallback>
+                  </Avatar>
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAuth } from "firebase/auth"; // ✅ Import auth to check login status
 import ThreeScene from "@/components/ThreeScene";
 import FloatingMathSymbols from "@/components/FloatingMathSymbols";
 
@@ -238,7 +239,16 @@ const About = () => {
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center">
               <button
-                onClick={() => navigate("/login")}
+                onClick={() => {
+                  const auth = getAuth();
+                  const user = auth.currentUser;
+
+                  if (user) {
+                    navigate("/main"); // ✅ logged in
+                  } else {
+                    navigate("/login"); // ❌ not logged in
+                  }
+                }}
                 className="neon-button text-white text-lg"
               >
                 Schedule Demo

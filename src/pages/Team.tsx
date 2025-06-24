@@ -1,214 +1,201 @@
-
-import { useEffect, useRef } from "react";
-import ThreeScene from "@/components/ThreeScene";
-import FloatingMathSymbols from "@/components/FloatingMathSymbols";
+import { useEffect, useState } from "react";
 
 const Team = () => {
+  const [activeMember, setActiveMember] = useState(0);
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
+
   const teamMembers = [
     {
       name: "Mr. Noorul",
       role: "Lead Mathematician",
       bio: "PhD in Applied Mathematics with 15+ years in educational technology",
-      image: "👩‍🏫"
+      image: "👩‍🏫",
+      color: "#0ea5e9"
     },
     {
       name: "Prof. Michael Rodriguez",
       role: "3D Learning Specialist",
       bio: "Expert in immersive educational experiences and visual learning",
-      image: "👨‍💻"
+      image: "👨‍💻",
+      color: "#8b5cf6"
     },
     {
       name: "Dr. Emily Watson",
       role: "Curriculum Director",
       bio: "Former MIT professor specializing in innovative teaching methods",
-      image: "👩‍🔬"
+      image: "👩‍🔬",
+      color: "#ec4899"
     },
     {
       name: "James Thompson",
       role: "UX/3D Designer",
       bio: "Award-winning designer focused on intuitive learning interfaces",
-      image: "🎨"
+      image: "🎨",
+      color: "#f59e0b"
     }
   ];
 
-  const setupTeamScene = (scene: any, camera: any, renderer: any) => {
-    const cubeGroup = new window.THREE.Group();
-    
-    // Create rotating cube for team showcase
-    const cubeSize = 4;
-    const geometry = new window.THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
-    
-    teamMembers.forEach((member, index) => {
-      // Create a face for each team member
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      canvas.width = 512;
-      canvas.height = 512;
-      
-      if (context) {
-        // Background gradient
-        const gradient = context.createLinearGradient(0, 0, 0, 512);
-        gradient.addColorStop(0, '#0EA5E9');
-        gradient.addColorStop(1, '#1E40AF');
-        context.fillStyle = gradient;
-        context.fillRect(0, 0, 512, 512);
-        
-        // Member info
-        context.fillStyle = 'white';
-        context.font = 'bold 48px Arial';
-        context.textAlign = 'center';
-        context.fillText(member.image, 256, 180);
-        
-        context.font = 'bold 32px Arial';
-        context.fillText(member.name, 256, 250);
-        
-        context.font = '24px Arial';
-        context.fillStyle = '#F59E0B';
-        context.fillText(member.role, 256, 290);
-        
-        context.font = '18px Arial';
-        context.fillStyle = 'white';
-        const words = member.bio.split(' ');
-        let line = '';
-        let y = 330;
-        
-        words.forEach(word => {
-          const testLine = line + word + ' ';
-          const metrics = context.measureText(testLine);
-          if (metrics.width > 450 && line !== '') {
-            context.fillText(line, 256, y);
-            line = word + ' ';
-            y += 25;
-          } else {
-            line = testLine;
-          }
-        });
-        context.fillText(line, 256, y);
-      }
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveMember(prev => (prev + 1) % teamMembers.length);
+    }, 5000);
 
-      const texture = new window.THREE.CanvasTexture(canvas);
-      const materials = [
-        new window.THREE.MeshPhongMaterial({ color: 0x666666 }), 
-        new window.THREE.MeshPhongMaterial({ color: 0x666666 }), 
-        new window.THREE.MeshPhongMaterial({ color: 0x666666 }), 
-        new window.THREE.MeshPhongMaterial({ color: 0x666666 }), 
-        new window.THREE.MeshPhongMaterial({ map: texture }), 
-        new window.THREE.MeshPhongMaterial({ color: 0x666666 }), 
-      ];
-
-      if (index === 0) {
-        const cube = new window.THREE.Mesh(geometry, materials);
-        cubeGroup.add(cube);
-      }
-    });
-
-    scene.add(cubeGroup);
-
-    // Lighting
-    const ambientLight = new window.THREE.AmbientLight(0x404040, 0.6);
-    scene.add(ambientLight);
-
-    const directionalLight = new window.THREE.DirectionalLight(0x0EA5E9, 1);
-    directionalLight.position.set(5, 5, 5);
-    scene.add(directionalLight);
-
-    // Particle effects around cube
-    const particleGeometry = new window.THREE.BufferGeometry();
-    const particleCount = 500;
-    const positions = new Float32Array(particleCount * 3);
-
-    for (let i = 0; i < particleCount * 3; i++) {
-      positions[i] = (Math.random() - 0.5) * 20;
-    }
-
-    particleGeometry.setAttribute('position', new window.THREE.BufferAttribute(positions, 3));
-    
-    const particleMaterial = new window.THREE.PointsMaterial({
-      color: 0xF59E0B,
-      size: 0.1,
-      transparent: true,
-      opacity: 0.8,
-    });
-
-    const particles = new window.THREE.Points(particleGeometry, particleMaterial);
-    scene.add(particles);
-
-    camera.position.z = 10;
-    
-    let currentFace = 0;
-    let rotationTarget = 0;
-
-    // Auto-rotation and keyboard controls
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowRight') {
-        currentFace = (currentFace + 1) % 4;
-        rotationTarget = -currentFace * Math.PI / 2;
-      } else if (event.key === 'ArrowLeft') {
-        currentFace = (currentFace - 1 + 4) % 4;
-        rotationTarget = -currentFace * Math.PI / 2;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-
-    // Animation
-    const animate = () => {
-      // Smooth rotation to target
-      cubeGroup.rotation.y += (rotationTarget - cubeGroup.rotation.y) * 0.1;
-      
-      // Auto-rotate when not actively controlled
-      if (Math.abs(rotationTarget - cubeGroup.rotation.y) < 0.01) {
-        cubeGroup.rotation.y += 0.005;
-        rotationTarget += 0.005;
-      }
-
-      // Animate particles
-      particles.rotation.y += 0.002;
-      
-      requestAnimationFrame(animate);
-    };
-    animate();
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-    };
-  };
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="min-h-screen relative pt-20">
-      <FloatingMathSymbols />
-      
-      <div className="absolute inset-0 z-0">
-        <ThreeScene onSceneReady={setupTeamScene} />
-      </div>
+    <div className="min-h-screen bg-black text-white overflow-hidden">
+      {/* Animated glow effect */}
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[80vh] h-[80vh] rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-3xl animate-pulse-slow"></div>
 
-      <div className="relative z-10 max-w-4xl mx-auto px-6 py-20">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 py-20">
         <div className="text-center mb-16">
-          <h1 className="text-5xl md:text-6xl font-space font-bold text-white mb-6">
-            Meet Our
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <span className="block">Meet Our</span>
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-600 mt-2">
               Expert Team
             </span>
           </h1>
-          <p className="text-xl text-white/80 mb-8">
+          <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-8">
             Passionate educators and technologists dedicated to revolutionizing math education
           </p>
-          <p className="text-white/60">
-            Use arrow keys to navigate through team members or watch the auto-rotation
-          </p>
+
+          <div className="inline-flex space-x-2 mt-6">
+            {teamMembers.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setActiveMember(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${activeMember === index ? 'bg-yellow-400 scale-125' : 'bg-gray-600'}`}
+                aria-label={`View team member ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-20">
+        {/* Animated team member spotlight */}
+        <div className="relative h-96 mb-20">
           {teamMembers.map((member, index) => (
-            <div key={index} className="glass-panel p-6 hover:bg-white/20 transition-all duration-300">
-              <div className="text-center">
-                <div className="text-6xl mb-4">{member.image}</div>
-                <h3 className="text-2xl font-space font-bold text-white mb-2">{member.name}</h3>
-                <p className="text-yellow-400 font-medium mb-4">{member.role}</p>
-                <p className="text-white/70">{member.bio}</p>
+            <div
+              key={index}
+              className={`absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center transition-opacity duration-1000 ${activeMember === index ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            >
+              <div
+                className="text-9xl mb-6 transition-transform duration-700"
+                style={{
+                  transform: activeMember === index ? 'translateY(0) rotate(0deg)' : 'translateY(50px) rotate(10deg)',
+                  textShadow: `0 0 20px ${member.color}, 0 0 40px ${member.color}`
+                }}
+              >
+                {member.image}
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold mb-2">{member.name}</h2>
+              <p className="text-xl text-yellow-400 mb-4">{member.role}</p>
+              <p className="text-gray-300 max-w-md text-center">{member.bio}</p>
+            </div>
+          ))}
+
+          {/* Connecting lines */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80">
+            {[0, 90, 180, 270].map((angle, index) => (
+              <div
+                key={index}
+                className={`absolute top-1/2 left-1/2 w-40 h-1 bg-gradient-to-r from-transparent via-yellow-400 to-transparent transition-opacity duration-500 ${activeMember === index ? 'opacity-50' : 'opacity-10'}`}
+                style={{
+                  transform: `translate(-50%, -50%) rotate(${angle}deg) translateX(80px)`,
+                  transformOrigin: 'left center'
+                }}
+              ></div>
+            ))}
+          </div>
+        </div>
+
+        {/* Team member cards with animations */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {teamMembers.map((member, index) => (
+            <div
+              key={index}
+              onMouseEnter={() => setHoveredCard(index)}
+              onMouseLeave={() => setHoveredCard(null)}
+              onClick={() => setActiveMember(index)}
+              className={`relative bg-gray-900/80 backdrop-blur-md rounded-xl p-6 border transition-all duration-500 overflow-hidden cursor-pointer
+                ${hoveredCard === index ? 'border-yellow-400 scale-105' : 'border-gray-800 scale-100'}
+                ${activeMember === index ? 'ring-2 ring-yellow-400' : ''}`}
+              style={{
+                transform: hoveredCard === index ? 'translateY(-10px)' : 'translateY(0)',
+                boxShadow: hoveredCard === index ? `0 10px 30px -10px ${member.color}80` : '0 4px 20px -5px rgba(0,0,0,0.5)'
+              }}
+            >
+              <div
+                className="absolute inset-0 opacity-20 transition-opacity duration-500"
+                style={{
+                  background: `radial-gradient(600px at 50% 50%, ${member.color}40, transparent)`,
+                  opacity: hoveredCard === index ? 0.4 : 0
+                }}
+              ></div>
+
+              <div
+                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full transition-opacity duration-500"
+                style={{
+                  background: `radial-gradient(100px, ${member.color}40, transparent)`,
+                  opacity: hoveredCard === index ? 1 : 0
+                }}
+              ></div>
+
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <div
+                  className="text-6xl mb-4 transition-transform duration-500"
+                  style={{
+                    transform: hoveredCard === index ? 'scale(1.2) rotate(5deg)' : 'scale(1) rotate(0)',
+                    textShadow: hoveredCard === index ? `0 0 15px ${member.color}` : 'none'
+                  }}
+                >
+                  {member.image}
+                </div>
+                <h3 className="text-xl font-bold mb-2">{member.name}</h3>
+                <p
+                  className="font-medium mb-4 transition-all duration-300"
+                  style={{ color: hoveredCard === index ? member.color : '#f59e0b' }}
+                >
+                  {member.role}
+                </p>
+                <p className="text-gray-300 text-sm">{member.bio}</p>
+
+                <div
+                  className="w-24 h-0.5 mt-4 transition-all duration-500"
+                  style={{
+                    background: `linear-gradient(to right, transparent, ${member.color}, transparent)`,
+                    opacity: hoveredCard === index ? 1 : 0.5,
+                    transform: hoveredCard === index ? 'scaleX(1.2)' : 'scaleX(1)'
+                  }}
+                ></div>
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Additional content */}
+        <div className="mt-20 text-center max-w-3xl mx-auto">
+          <h2 className="text-3xl font-bold mb-6">Our Vision for Math Education</h2>
+          <p className="text-gray-300 mb-8">
+            We believe mathematics should be an immersive, intuitive experience. By combining
+            cutting-edge 3D visualization technology with pedagogical expertise, we're creating
+            learning tools that make abstract concepts tangible and engaging for students of all ages.
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-4 mt-8">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-3 rounded-full text-sm font-medium">
+              Immersive Learning
+            </div>
+            <div className="bg-gradient-to-r from-purple-600 to-fuchsia-700 px-6 py-3 rounded-full text-sm font-medium">
+              Visual Understanding
+            </div>
+            <div className="bg-gradient-to-r from-rose-600 to-pink-700 px-6 py-3 rounded-full text-sm font-medium">
+              Interactive Exploration
+            </div>
+            <div className="bg-gradient-to-r from-amber-600 to-orange-600 px-6 py-3 rounded-full text-sm font-medium">
+              Intuitive Interfaces
+            </div>
+          </div>
         </div>
       </div>
     </div>
