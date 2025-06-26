@@ -6,10 +6,22 @@ import FloatingMathSymbols from "@/components/FloatingMathSymbols";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { auth, googleProvider } from '@/firebase';
+import { auth, googleProvider, facebookProvider } from '@/firebase';
 import { useToast } from "@/hooks/use-toast";
 
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  signInWithPopup,
+  sendEmailVerification,
+  signOut,
+} from "firebase/auth";
+
+const getRandomAvatar = () => {
+    const randomIndex = Math.floor(Math.random() * 10) + 1;
+    return `https://api.dicebear.com/7.x/thumbs/svg?seed=avatar${randomIndex}`;
+  };
 
 const Login = () => {
   const [searchParams] = useSearchParams();
@@ -21,7 +33,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [userRole, setUserRole] = useState(searchParams.get("role") || "learner");
-const setupLoginScene = (scene: any, camera: any, renderer: any) => {
+
+ const setupLoginScene = (scene: any, camera: any, renderer: any) => {
     if (!window.THREE) return;
 
     // Enhanced particle system
@@ -163,13 +176,26 @@ const setupLoginScene = (scene: any, camera: any, renderer: any) => {
       window.removeEventListener('mousemove', handleMouseMove);
     };
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (isLogin) {
       if (email && password) {
         try {
-          await signInWithEmailAndPassword(auth, email, password);
+          const result = await signInWithEmailAndPassword(auth, email, password);
+          const user = result.user;
+
+          if (!user.emailVerified) {
+            toast({
+              title: "Email Not Verified",
+              description: "Please verify your email before logging in.",
+              variant: "destructive",
+            });
+            await signOut(auth);
+            return;
+          }
+
           toast({
             title: "Login Successful!",
             description: `Welcome back to Y2Prove, ${userRole}!`,
@@ -192,14 +218,19 @@ const setupLoginScene = (scene: any, camera: any, renderer: any) => {
     } else {
       if (name && email && password) {
         try {
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          await updateProfile(userCredential.user, { displayName: name });
+          const result = await createUserWithEmailAndPassword(auth, email, password);
+          await updateProfile(result.user, {
+  displayName: name,
+  photoURL: getRandomAvatar(),
+});
+          await sendEmailVerification(result.user);
 
           toast({
             title: "Account Created!",
-            description: `Welcome to Y2Prove, ${name}! Your ${userRole} account is ready.`,
+            description: `Welcome to Y2Prove, ${name}! A verification link was sent to your email.`,
           });
-          navigate("/main");
+
+          await signOut(auth);
         } catch (error: any) {
           toast({
             title: "Signup Failed",
@@ -219,77 +250,59 @@ const setupLoginScene = (scene: any, camera: any, renderer: any) => {
 
   const handleSocialLogin = async (type: "google" | "facebook") => {
     try {
-      if (type === 'google') {
-        const result = await signInWithPopup(auth, googleProvider);
-        const user = result.user;
+      const provider = type === 'google' ? googleProvider : facebookProvider;
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      if (!user.photoURL) {
+  await updateProfile(user, { photoURL: getRandomAvatar() });
+}
 
-        toast({
-          title: 'Google Login Successful',
-          description: `Welcome ${user.displayName || 'User'}!`,
-        });
-
-        navigate("/main");
-      } else {
-        toast({
-          title: 'Facebook login not implemented',
-          description: 'Please use Google login for now.',
-          variant: 'destructive'
-        });
-      }
+      toast({
+        title: `${type === 'google' ? 'Google' : 'Facebook'} Login Successful`,
+        description: `Welcome ${user.displayName || 'User'}!`,
+      });
+      navigate("/main");
     } catch (error: any) {
       toast({
-        title: 'Login Error',
+        title: `${type === 'google' ? 'Google' : 'Facebook'} Login Failed`,
         description: error.message || 'An error occurred during login',
-        variant: 'destructive',
+        variant: "destructive",
       });
     }
   };
 
   const getRoleTitle = () => {
     switch (userRole) {
-      case "teacher":
-        return "Teacher Portal";
-      case "parent":
-        return "Parent Dashboard";
-      default:
-        return "Student Learning Hub";
+      case "teacher": return "Teacher Portal";
+      case "parent": return "Parent Dashboard";
+      default: return "Student Learning Hub";
     }
   };
 
   const getRoleDescription = () => {
     switch (userRole) {
-      case "teacher":
-        return isLogin ? "Access your teaching dashboard and student analytics" : "Join our innovative teaching community";
-      case "parent":
-        return isLogin ? "Monitor and support your child's learning journey" : "Help guide your child's mathematical growth";
-      default:
-        return isLogin ? "Continue your immersive math learning adventure" : "Begin your journey to mathematical mastery";
+      case "teacher": return isLogin ? "Access your teaching dashboard and student analytics" : "Join our innovative teaching community";
+      case "parent": return isLogin ? "Monitor and support your child's learning journey" : "Help guide your child's mathematical growth";
+      default: return isLogin ? "Continue your immersive math learning adventure" : "Begin your journey to mathematical mastery";
     }
   };
 
   return (
-     <div className="min-h-screen flex items-center justify-center relative pt-20 overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center relative pt-20 overflow-hidden">
       <FloatingMathSymbols />
-      
       <div className="absolute inset-0 z-0">
         <ThreeScene onSceneReady={setupLoginScene} />
       </div>
       <div className="absolute inset-0 z-5 opacity-10">
         <div className="w-full h-full bg-gradient-to-br from-transparent via-blue-500/10 to-transparent">
           <div className="absolute inset-0" style={{
-            backgroundImage: `
-              linear-gradient(rgba(14, 165, 233, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(14, 165, 233, 0.1) 1px, transparent 1px)
-            `,
+            backgroundImage: `linear-gradient(rgba(14, 165, 233, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(14, 165, 233, 0.1) 1px, transparent 1px)`,
             backgroundSize: '50px 50px'
           }} />
         </div>
       </div>
       <div className="relative z-10 w-full max-w-md mx-auto p-6">
         <div className="p-8 animate-slide-in backdrop-blur-md bg-black/40 border border-white/20 shadow-[0_0_60px_rgba(255,255,255,0.05)] rounded-xl">
-
-          
-
           <div className="text-center mb-8">
             <h2 className="text-3xl font-space font-bold text-white mb-2">
               {isLogin ? `Welcome Back` : `Join the Future`}
@@ -297,7 +310,6 @@ const setupLoginScene = (scene: any, camera: any, renderer: any) => {
             <h3 className="text-xl text-yellow-400 mb-2 font-medium">{getRoleTitle()}</h3>
             <p className="text-white/80 text-sm leading-relaxed">{getRoleDescription()}</p>
           </div>
-
           <form onSubmit={handleSubmit} className="space-y-6">
             {!isLogin && (
               <div className="space-y-2">
@@ -305,22 +317,18 @@ const setupLoginScene = (scene: any, camera: any, renderer: any) => {
                 <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter your full name" />
               </div>
             )}
-
             <div className="space-y-2">
               <Label htmlFor="email" className="text-white font-medium">Email Address</Label>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email address" />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="password" className="text-white font-medium">Password</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" />
             </div>
-
             <Button type="submit" className="w-full h-12 neon-button text-lg font-semibold">
               {isLogin ? "Sign In to Y2Prove" : "Create Account"}
             </Button>
           </form>
-
           <div className="mt-8">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -330,15 +338,11 @@ const setupLoginScene = (scene: any, camera: any, renderer: any) => {
                 <span className="px-4 bg-transparent text-white/70 font-medium">Or continue with</span>
               </div>
             </div>
-
             <div className="mt-6 grid grid-cols-2 gap-4">
-              <Button variant="outline" className="bg-white text-black hover:bg-gray-200 transition-colors font-semibold"
-              onClick={() => handleSocialLogin("google")}>Google</Button>
-              <Button variant="outline" className="bg-blue-600 text-white hover:bg-blue-700 transition-colors font-semibold"
-              onClick={() => handleSocialLogin("facebook")}>Facebook</Button>
+              <Button variant="outline" className="bg-white text-black hover:bg-gray-200 transition-colors font-semibold" onClick={() => handleSocialLogin("google")}>Google</Button>
+              <Button variant="outline" className="bg-blue-600 text-white hover:bg-blue-700 transition-colors font-semibold" onClick={() => handleSocialLogin("facebook")}>Facebook</Button>
             </div>
           </div>
-
           <div className="mt-8 text-center space-y-4">
             <button onClick={() => setIsLogin(!isLogin)} className="text-yellow-400 hover:text-yellow-300 transition-colors font-medium">
               {isLogin ? "Don't have an account? Create one now" : "Already have an account? Sign in"}

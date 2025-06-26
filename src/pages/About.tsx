@@ -11,27 +11,22 @@ const About = () => {
     {
       title: "Our Mission",
       content:
-        "At Y2Prove, we believe that mathematics education should be engaging, interactive, and accessible to everyone. Our mission is to revolutionize how students learn math through immersive 3D experiences that make complex concepts intuitive and fun.",
+        "We deliver high quality lectures on a gamified platform that would serve in building concrete interest in subject and engagement with the subject. We don’t look for qualifications in a teacher but the passion and knowledge in the subject",
       icon: "🎯",
     },
     {
       title: "Our Vision",
       content:
-        "We envision a world where every student can confidently say 'I understand math!' by providing them with visual, interactive learning tools that adapt to their unique learning style and pace.",
+        "We are building an Ethiopia of math learners who learn by understanding, not by rote learning. We make students concept-focused instead of grade-focused. ",
       icon: "🔮",
     },
     {
       title: "Our Approach",
       content:
-        "By combining cutting-edge 3D technology with proven pedagogical methods, we create learning experiences that engage multiple senses, making mathematical concepts more memorable and meaningful.",
+        "We analyze student understanding not based on grades of an assessment but by their engagements made on the platform. Higher the engagement, higher the interest in subject.",
       icon: "🚀",
     },
-    {
-      title: "Our Impact",
-      content:
-        "Since our founding, we've helped over 10,000 students improve their math skills, with 85% reporting increased confidence and enjoyment in mathematics learning.",
-      icon: "📈",
-    },
+    
   ];
 
   const setupAboutScene = (scene: any, camera: any, renderer: any) => {

@@ -7,32 +7,25 @@ const Team = () => {
   const teamMembers = [
     {
       name: "Mr. Noorul",
-      role: "Lead Mathematician",
-      bio: "PhD in Applied Mathematics with 15+ years in educational technology",
-      image: "👩‍🏫",
+      role: "Founder & CAO",
+      bio: "Waited so hard for a revolution in the system, that we chose to change it ourselves",
+      image: "🧑‍🎓",
       color: "#0ea5e9"
     },
     {
-      name: "Prof. Michael Rodriguez",
-      role: "3D Learning Specialist",
+      name: "Nowfal",
+      role: "COO",
       bio: "Expert in immersive educational experiences and visual learning",
-      image: "👨‍💻",
+      image: "🧑‍💼",
       color: "#8b5cf6"
     },
     {
-      name: "Dr. Emily Watson",
-      role: "Curriculum Director",
-      bio: "Former MIT professor specializing in innovative teaching methods",
-      image: "👩‍🔬",
+      name: "Darshan",
+      role: "CSO",
+      bio: "Let’s Seed with curiosity, Water with practice, Manure with evaluation, Remove the weeds of fear and harvest the magic of math",
+      image: "🧑‍🔬",
       color: "#ec4899"
     },
-    {
-      name: "James Thompson",
-      role: "UX/3D Designer",
-      bio: "Award-winning designer focused on intuitive learning interfaces",
-      image: "🎨",
-      color: "#f59e0b"
-    }
   ];
 
   useEffect(() => {
@@ -45,8 +38,10 @@ const Team = () => {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden">
-      {/* Animated glow effect */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[80vh] h-[80vh] rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-3xl animate-pulse-slow"></div>
+      {/* Central glow effect */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-[80vh] h-[80vh] rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-3xl animate-pulse-slow"></div>
+      </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 py-20">
         <div className="text-center mb-16">
@@ -72,7 +67,7 @@ const Team = () => {
           </div>
         </div>
 
-        {/* Animated team member spotlight */}
+        {/* Spotlight animation */}
         <div className="relative h-96 mb-20">
           {teamMembers.map((member, index) => (
             <div
@@ -93,24 +88,11 @@ const Team = () => {
               <p className="text-gray-300 max-w-md text-center">{member.bio}</p>
             </div>
           ))}
-
-          {/* Connecting lines */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80">
-            {[0, 90, 180, 270].map((angle, index) => (
-              <div
-                key={index}
-                className={`absolute top-1/2 left-1/2 w-40 h-1 bg-gradient-to-r from-transparent via-yellow-400 to-transparent transition-opacity duration-500 ${activeMember === index ? 'opacity-50' : 'opacity-10'}`}
-                style={{
-                  transform: `translate(-50%, -50%) rotate(${angle}deg) translateX(80px)`,
-                  transformOrigin: 'left center'
-                }}
-              ></div>
-            ))}
-          </div>
         </div>
 
-        {/* Team member cards with animations */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Team cards */}
+        <div className="flex justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-center">
           {teamMembers.map((member, index) => (
             <div
               key={index}
@@ -172,8 +154,7 @@ const Team = () => {
             </div>
           ))}
         </div>
-
-        {/* Additional content */}
+        </div>
         <div className="mt-20 text-center max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold mb-6">Our Vision for Math Education</h2>
           <p className="text-gray-300 mb-8">
